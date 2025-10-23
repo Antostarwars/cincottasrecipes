@@ -1,0 +1,45 @@
+services:
+  wp:
+    image: wordpress:latest
+    ports:
+      - 8080:80
+    volumes:
+      - ./wp-app:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: "wordpress"
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: "ceccafish!"
+    depends_on:
+      - db
+
+  pma:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: "ceccafish!"
+      UPLOAD_LIMIT: 50M
+    ports:
+      - 8081:80
+    volumes:
+     - ./config/pma_php.ini:/usr/local/etc/php/conf.d/conf.ini
+     - ./config/pma_config.php:/etc/phpmyadmin/config.user.inc.php
+
+  db:
+    image: mysql:latest
+    ports:
+      - 3306:3306
+    command: [
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci'
+    ]
+    volumes:
+      - ./wp-data:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "wordpress"
+      MYSQL_ROOT_PASSWORD: "ceccafish!"
+
+volumes:
+  db_data:
